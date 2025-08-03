@@ -1,5 +1,6 @@
+import axios from "axios";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 const Register = () => {
   const {
@@ -8,10 +9,26 @@ const Register = () => {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log("Register Data:", data);
-    // TODO: Handle register logic (call API, context, etc.)
-  };
+   const navigate = useNavigate();
+
+  const onSubmit = async (data) => {
+  try {
+
+    const res = await axios.post("http://localhost:5000/api/v1/auth/register", data, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("Registration successful:", res.data);
+
+    // Optional: Redirect to login or dashboard
+    navigate("/login");
+
+  } catch (err) {
+    console.error("Registration error:", err.response?.data?.message || err.message);
+  }
+};
 
   return (
     <div className="hero bg-base-200 min-h-screen px-4">
