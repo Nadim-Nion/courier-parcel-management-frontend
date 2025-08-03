@@ -11,7 +11,8 @@ const BasicRoute = () => {
       <Routes>
         {/*  Main Layout Route */}
         <Route element={<MainLayout />}>
-          <Route path="/" element={<Customer />} />
+          <Route path="/customer-dashboard" element={<Customer />} />
+          <Route path="/admin-dashboard" element={<Customer />} />
         </Route>
 
         <Route path="/login" element={<Login />} />

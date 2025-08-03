@@ -1,5 +1,8 @@
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { useState } from "react";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 const Login = () => {
   const {
@@ -7,15 +10,52 @@ const Login = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState("");
 
-  const onSubmit = (data) => {
-    console.log("Login Data:", data);
-    // TODO: Call login API or AuthContext
+  const onSubmit = async (data) => {
+    try {
+      setLoading(true);
+      setServerError("");
+
+      // 1. Send login request
+      const res = await axios.post("http://localhost:5000/api/v1/auth/login", {
+        email: data.email,
+        password: data.password,
+      });
+
+      console.log("res:", res.data);
+
+      const { accessToken, refreshToken } = res.data.data;
+
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+
+      // Decode the token to extract role
+      const decoded = jwtDecode(accessToken);
+      const role = decoded?.role;
+
+      // 4. Navigate based on role
+      if (role === "admin") {
+        navigate("/admin-dashboard");
+      } else if (role === "customer") {
+        navigate("/customer-dashboard");
+      } else {
+        setServerError("Invalid user role");
+      }
+    } catch (error) {
+      setServerError(
+        error?.response?.data?.message || "Login failed. Try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="hero bg-base-200 min-h-screen px-4">
-      <div className="hero-content flex-col  w-full max-w-6xl">
+      <div className="hero-content flex-col w-full max-w-6xl">
         {/* Title Side */}
         <div className="text-center w-full lg:w-1/2 mb-6 lg:mb-0">
           <h1 className="text-3xl md:text-4xl xl:text-5xl font-bold">
@@ -32,7 +72,7 @@ const Login = () => {
             onSubmit={handleSubmit(onSubmit)}
             className="card-body space-y-2"
           >
-            {/* Email Field */}
+            {/* Email */}
             <div>
               <label className="label">
                 <span className="label-text">Email</span>
@@ -50,7 +90,7 @@ const Login = () => {
               )}
             </div>
 
-            {/* Password Field */}
+            {/* Password */}
             <div>
               <label className="label">
                 <span className="label-text">Password</span>
@@ -74,7 +114,12 @@ const Login = () => {
               )}
             </div>
 
-            {/* Link to Register */}
+            {/* Server Error */}
+            {serverError && (
+              <div className="text-red-500 text-sm">{serverError}</div>
+            )}
+
+            {/* Link */}
             <div className="text-sm">
               New to our platform?{" "}
               <Link className="link link-hover text-blue-500" to="/register">
@@ -84,8 +129,12 @@ const Login = () => {
 
             {/* Submit Button */}
             <div className="form-control mt-4">
-              <button className="btn btn-outline btn-primary w-full">
-                Login
+              <button
+                className="btn btn-outline btn-primary w-full"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? "Logging in..." : "Login"}
               </button>
             </div>
           </form>
