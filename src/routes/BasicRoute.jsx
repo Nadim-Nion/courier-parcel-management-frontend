@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Routes } from "react-router";
+import { Route, Routes, Navigate } from "react-router";
 import MainLayout from "../layouts/MainLayout";
 import Customer from "../pages/dashboard/Customer";
 import Login from "../pages/shared/Login";
@@ -7,18 +7,20 @@ import Register from "../pages/shared/Register";
 
 const BasicRoute = () => {
   return (
-    <div>
-      <Routes>
-        {/*  Main Layout Route */}
-        <Route element={<MainLayout />}>
-          <Route path="/customer-dashboard" element={<Customer />} />
-          <Route path="/admin-dashboard" element={<Customer />} />
-        </Route>
+    <Routes>
+      {/* Root Redirect */}
+      <Route path="/" element={<Navigate to="/login" />} />
 
-        <Route path="/login" element={<Login />} />
-        <Route path="register" element={<Register />} />
-      </Routes>
-    </div>
+      {/* Main Layout Routes */}
+      <Route element={<MainLayout />}>
+        <Route path="/customer-dashboard" element={<Customer />} />
+        <Route path="/admin-dashboard" element={<Customer />} />
+      </Route>
+
+      {/* Auth Routes */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+    </Routes>
   );
 };
 
